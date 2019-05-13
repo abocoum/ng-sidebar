@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "install-lib": "npm i -f ng-sidebar",
-    "start": "webpack-dev-server --progress --colors",
+    "start": "webpack-dev-server --progress --colors --port=8087",
     "build": "webpack -p --progress --colors",
     "deploy": "npm run build && gh-pages -d dist"
   },

@@ -74,7 +74,6 @@ import { isBrowser } from './utils';
 })
 export class SidebarContainer implements AfterContentInit, OnChanges, OnDestroy {
   @Input() animate: boolean = true;
-
   @Input() allowSidebarBackdropControl: boolean = true;
   @Input() showBackdrop: boolean = false;
   @Output() showBackdropChange = new EventEmitter<boolean>();

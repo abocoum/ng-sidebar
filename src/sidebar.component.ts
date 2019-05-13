@@ -29,7 +29,8 @@ import { isLTR, isIOS, isBrowser } from './utils';
       [class.ng-sidebar--inert]="_isInert"
       [class.ng-sidebar--animate]="animate"
       [ngClass]="sidebarClass"
-      [ngStyle]="_getStyle()">
+      [ngStyle]="_getStyle2()"
+      >
       <ng-content></ng-content>
     </aside>
   `,
@@ -40,43 +41,35 @@ import { isLTR, isIOS, isBrowser } from './utils';
       pointer-events: auto;
       position: absolute;
       touch-action: auto;
-      will-change: initial;
       z-index: 99999999;
     }
-
     .ng-sidebar--left {
       bottom: 0;
       left: 0;
       top: 0;
     }
-
     .ng-sidebar--right {
       bottom: 0;
       right: 0;
       top: 0;
     }
-
     .ng-sidebar--top {
       left: 0;
       right: 0;
       top: 0;
     }
-
     .ng-sidebar--bottom {
       bottom: 0;
       left: 0;
       right: 0;
     }
-
     .ng-sidebar--inert {
       pointer-events: none;
       touch-action: none;
-      will-change: transform;
     }
-
     .ng-sidebar--animate {
-      -webkit-transition: -webkit-transform 0.3s cubic-bezier(0, 0, 0.3, 1);
-      transition: transform 0.3s cubic-bezier(0, 0, 0.3, 1);
+      -webkit-transition: -webkit-all 0.3s cubic-bezier(0, 0, 0.3, 1);
+      transition: all 0.3s cubic-bezier(0, 0, 0.3, 1);
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -89,6 +82,7 @@ export class Sidebar implements OnInit, OnChanges, OnDestroy {
   @Input() mode: 'over' | 'push' | 'slide' = 'over';
   @Input() dock: boolean = false;
   @Input() dockedSize: string = '0px';
+  @Input() normalSize : string = '0px';
   @Input() position: 'start' | 'end' | 'left' | 'right' | 'top' | 'bottom' = 'start';
   @Input() animate: boolean = true;
 
@@ -349,7 +343,6 @@ export class Sidebar implements OnInit, OnChanges, OnDestroy {
       let translateAmt: string = `${this._isLeftOrTop ? '-' : ''}100%`;
 
       transformStyle = `${transformDir}(${translateAmt})`;
-
       // Docked mode: partially remains open
       // Note that using `calc(...)` within `transform(...)` doesn't work in IE
       if (this.dock && this._dockedSize > 0 && !(this._isModeSlide && this.opened)) {
@@ -361,6 +354,31 @@ export class Sidebar implements OnInit, OnChanges, OnDestroy {
       webkitTransform: transformStyle,
       transform: transformStyle
     } as CSSStyleDeclaration;
+  }
+
+  /**
+   * @internal
+   *
+   * Computes the transform styles for the sidebar template by AMBC.
+   *
+   * @return {CSSStyleDeclaration} The transform styles, with the WebKit-prefixed version as well.
+   */
+  _getStyle2(): CSSStyleDeclaration {
+    let styles = {  };
+    console.log(this.normalSize);
+
+    // Hides sidebar off screen when closed
+    if (this._isInert) {
+      styles[this.position] = `-${this.normalSize}`;
+      styles['width'] =  '0px';
+    } else if(this._isDocked) {
+      styles['width'] =  '' + this.dockedSize;
+    } else if(this.opened) {
+      styles['width'] = '' + this.normalSize;
+    }
+
+   console.log(JSON.stringify(styles));
+    return styles as CSSStyleDeclaration;
   }
 
   /**
@@ -623,9 +641,9 @@ export class Sidebar implements OnInit, OnChanges, OnDestroy {
    */
   get _width(): number {
     if (this._elSidebar.nativeElement) {
-      return this._isDocked ? this._dockedSize : this._elSidebar.nativeElement.offsetWidth;
+      return this._isDocked ? this._dockedSize :
+        this._normalSize === 0 ? this._elSidebar.nativeElement.offsetWidth : this._normalSize;
     }
-
     return 0;
   }
 
@@ -638,6 +656,17 @@ export class Sidebar implements OnInit, OnChanges, OnDestroy {
    */
   get _dockedSize(): number {
     return parseFloat(this.dockedSize);
+  }
+
+  /**
+   * @internal
+   *
+   * Returns the normal size as a number.
+   *
+   * @return {number} normal size.
+   */
+  get _normalSize(): number {
+    return parseFloat(this.normalSize);
   }
 
   /**
