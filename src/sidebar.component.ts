@@ -365,7 +365,6 @@ export class Sidebar implements OnInit, OnChanges, OnDestroy {
    */
   _getStyle2(): CSSStyleDeclaration {
     let styles = {  };
-    console.log(this.normalSize);
 
     // Hides sidebar off screen when closed
     if (this._isInert) {
@@ -377,7 +376,6 @@ export class Sidebar implements OnInit, OnChanges, OnDestroy {
       styles['width'] = '' + this.normalSize;
     }
 
-   console.log(JSON.stringify(styles));
     return styles as CSSStyleDeclaration;
   }
 
